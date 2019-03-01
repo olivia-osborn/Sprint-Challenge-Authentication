@@ -12,6 +12,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import withStyles from '@material-ui/core/styles/withStyles';
+import axios from "axios";
 
 const styles = theme => ({
   main: {
@@ -51,6 +52,24 @@ class SignIn extends React.Component {
       password: "",
   }
 
+  handleChanges = e => {
+      const {name, value} = e.target;
+      this.setState({[name]: value})
+  }
+
+  handleSubmit = e => {
+      e.preventDefault();
+      axios
+        .post("http://localhost:3300/api/login", this.state)
+        .then(res => {
+            localStorage.setItem("jwt", res.data.token)
+            this.props.history.push("/jokes")
+        })
+        .catch(err => {
+            console.log(err)
+        })
+  }
+
   render () {
     return (
         <main className={this.props.classes.main}>
@@ -62,19 +81,15 @@ class SignIn extends React.Component {
             <Typography component="h1" variant="h5">
               Sign in
             </Typography>
-            <form className={this.props.classes.form}>
+            <form onSubmit={this.handleSubmit} className={this.props.classes.form}>
               <FormControl margin="normal" required fullWidth>
-                <InputLabel htmlFor="email">Email Address</InputLabel>
-                <Input id="email" name="email" autoComplete="email" autoFocus />
+                <InputLabel htmlFor="username">Username</InputLabel>
+                <Input onChange={this.handleChanges} id="username" name="username" autoComplete="username" autoFocus />
               </FormControl>
               <FormControl margin="normal" required fullWidth>
                 <InputLabel htmlFor="password">Password</InputLabel>
-                <Input name="password" type="password" id="password" autoComplete="current-password" />
+                <Input onChange={this.handleChanges} name="password" type="password" id="password" autoComplete="current-password" />
               </FormControl>
-              <FormControlLabel
-                control={<Checkbox value="remember" color="primary" />}
-                label="Remember me"
-              />
               <Button
                 type="submit"
                 fullWidth
