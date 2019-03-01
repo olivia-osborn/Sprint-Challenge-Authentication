@@ -1,6 +1,9 @@
 const axios = require('axios');
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
-const { authenticate } = require('../auth/authenticate');
+const Users = require("../users/usersModel");
+const { authenticate, jwtKey } = require("../auth/authenticate");
 
 module.exports = server => {
   server.post('/api/register', register);
@@ -8,12 +11,45 @@ module.exports = server => {
   server.get('/api/jokes', authenticate, getJokes);
 };
 
+function generateToken(user) {
+  const payload = {
+    subject: user.id,
+    username: user.username,
+  }
+  const options = {
+    expiresIn: "1d",
+  }
+  return jwt.sign(payload, jwtKey, options)
+}
+
 function register(req, res) {
-  // implement user registration
+  let user = req.body;
+  const hash = bcrypt.hashSync(user.password, 12);
+  user.password = hash;
+  Users.add(user)
+    .then(saved => {
+      res.status(201).json(saved);
+    })
+    .catch(err => {
+      res.status(500).json(err);
+    })
 }
 
 function login(req, res) {
-  // implement user login
+  let {username, password} = req.body;
+  Users.getBy({username})
+    .first()
+    .then(user => {
+      if(user && bcrypt.compareSync(password, user.password)) {
+        const token = generateToken(user)
+        res.status(200).json({message: `welcome ${user.username}`, token})
+      } else {
+        res.status(401).json({message: "invalid credentials"})
+      }
+    })
+    .catch(err => {
+      res.status(500).json(err)
+    })
 }
 
 function getJokes(req, res) {
