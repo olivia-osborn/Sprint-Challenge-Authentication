@@ -1,6 +1,8 @@
 import React from "react";
 import axios from "axios";
 
+import Joke from "./Joke";
+
 class Jokes extends React.Component {
     state = {
         jokes: []
@@ -27,7 +29,7 @@ class Jokes extends React.Component {
         return (
             <>
             {this.state.jokes.map(joke => {
-                return <p key={joke.id}>{joke.joke}</p>
+                return <Joke key={joke.id} joke={joke}/>
             })}
             </>
         )
@@ -35,3 +37,4 @@ class Jokes extends React.Component {
 }
 
 export default Jokes;
+
