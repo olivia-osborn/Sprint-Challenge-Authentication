@@ -7,8 +7,14 @@ class Jokes extends React.Component {
     }
 
     componentDidMount() {
+        const token = localStorage.getItem("jwt");
+        const reqOptions = {
+            headers: {
+                authorization: token,
+            }
+        }
         axios
-            .get("http://localhost:3300/api/jokes")
+            .get("http://localhost:3300/api/jokes", reqOptions)
             .then(res => {
                 this.setState({jokes: res.data})
             })
@@ -21,7 +27,7 @@ class Jokes extends React.Component {
         return (
             <>
             {this.state.jokes.map(joke => {
-                return <p>{joke}</p>
+                return <p key={joke.id}>{joke.joke}</p>
             })}
             </>
         )
