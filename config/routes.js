@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 const Users = require("../users/usersModel");
-const { authenticate } = require("../auth/authenticate");
+const { authenticate, jwtKey } = require("../auth/authenticate");
 
 module.exports = server => {
   server.post('/api/register', register);
@@ -19,7 +19,7 @@ function generateToken(user) {
   const options = {
     expiresIn: "1d",
   }
-  return jwt.sign(payload, secret, options)
+  return jwt.sign(payload, jwtKey, options)
 }
 
 function register(req, res) {
@@ -36,7 +36,20 @@ function register(req, res) {
 }
 
 function login(req, res) {
-  // implement user login
+  let {username, password} = req.body;
+  Users.getBy({username})
+    .first()
+    .then(user => {
+      if(user && bcrypt.compareSync(password, user.password)) {
+        const token = generateToken(user)
+        res.status(200).json({message: `welcome ${user.username}`})
+      } else {
+        res.status(401).json({message: "invalid credentials"})
+      }
+    })
+    .catch(err => {
+      res.status(500).json(err)
+    })
 }
 
 function getJokes(req, res) {
